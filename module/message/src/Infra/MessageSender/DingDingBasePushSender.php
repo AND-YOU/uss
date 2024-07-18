@@ -7,6 +7,7 @@ use Darabonba\OpenApi\Models\Config;
 use Hyperf\Cache\Cache;
 use Hyperf\Guzzle\ClientFactory;
 use Hyperf\Logger\LoggerFactory;
+use Exception;
 
 abstract class DingDingBasePushSender extends AbstractMessageSender
 {
@@ -36,9 +37,9 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
     protected string $accessToken;
 
     /**
-     * @var string 基础接口地址
+     * @var string 基础接口地址域名
      */
-    protected string $oapiUrl = 'https://oapi.dingtalk.com/topapi';
+    protected string $apiDomain = 'https://oapi.dingtalk.com';
 
     /**
      * @var int 消息发送的主体ID
@@ -119,7 +120,9 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
         if (isset($accessTokenResponse->body->accessToken, $accessTokenResponse->body->expireIn)) {
             $this->accessToken = $accessTokenResponse->body->accessToken;
             $cache->set($cacheKey, $accessTokenResponse->body->accessToken, $accessTokenResponse->body->expireIn);
+            return;
         }
+        throw new Exception('钉钉获取accessToken失败');
     }
 
     /**
@@ -132,7 +135,7 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
      */
     protected function getUserByPhone(string $phone): array
     {
-        $sendMessageApi = $this->oapiUrl . '/v2/user/getbymobile';
+        $sendMessageApi = $this->apiDomain . '/topapi/v2/user/getbymobile?access_token='.$this->accessToken;
         $result = $this->sendPostRequest($sendMessageApi, [
             'mobile' => $phone,
         ]);
@@ -153,7 +156,7 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
      */
     protected function sendAgentMsg(string $userIds, array $msg): void
     {
-        $sendMessageApi = $this->oapiUrl . '/message/corpconversation/asyncsend_v2';
+        $sendMessageApi = $this->apiDomain . '/topapi/message/corpconversation/asyncsend_v2?access_token='.$this->accessToken;
         $this->sendPostRequest($sendMessageApi, [
             'agent_id' => $this->agentId,
             'userid_list' => $userIds,
@@ -179,7 +182,7 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
         $container = \Hyperf\Context\ApplicationContext::getContainer();
         $clientFactory = $container->get(ClientFactory::class);
         $client = $clientFactory->create();
-        $res = $client->post($url.'?access_token='.$this->accessToken, [
+        $res = $client->post($url, [
             'headers' => [
                 'Content-Type' => 'application/json; charset=utf-8',
             ],
