@@ -82,4 +82,5 @@ class NotificationTest extends TestCase
         }
         $this->assertTrue(true);
     }
+
 }
