@@ -28,6 +28,9 @@ class Message
     #[Field(name: 'uniqid', type: 'string', desc: '唯一识别符（不可重复）')]
     private string $uniqid;
 
+    #[Field(name: 'agentId', type: 'int', desc: '应用Id')]
+    private int $agentId;
+
     #[Field(name: 'tplId', type: 'int', desc: '模板id')]
     private int $tplId;
 

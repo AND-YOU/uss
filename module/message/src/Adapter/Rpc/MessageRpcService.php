@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Uss\Message\Adapter\Rpc;
 
+use Hyperf\RpcServer\Annotation\RpcService;
 use MaliBoot\Cola\Adapter\AbstractRpcService;
 use MaliBoot\Cola\Annotation\API;
 use MaliBoot\Cola\Annotation\Method;
@@ -20,11 +21,13 @@ use MaliBoot\Dto\PageVO;
 use Uss\Message\App\Executor\Command\MessageCreateCmdExe;
 use Uss\Message\App\Executor\Command\MessageDeleteCmdExe;
 use Uss\Message\App\Executor\Command\MessageUpdateCmdExe;
+use Uss\Message\App\Executor\Command\NotificationCmdExe;
 use Uss\Message\App\Executor\Query\MessageGetByIdQryExe;
 use Uss\Message\App\Executor\Query\MessageListByPageQryExe;
 use Uss\Message\Client\Api\MessageService;
 use Uss\Message\Client\Dto\Command\MessageCreateCmd;
 use Uss\Message\Client\Dto\Command\MessageUpdateCmd;
+use Uss\Message\Client\Dto\Command\NotificationCmd;
 use Uss\Message\Client\Dto\Query\MessageListByPageQry;
 use Uss\Message\Client\ViewObject\MessageVO;
 
@@ -32,6 +35,7 @@ use Uss\Message\Client\ViewObject\MessageVO;
  * 消息推送.
  */
 #[API(name: '消息推送')]
+#[RpcService(name: 'UssMessageService', server: 'jsonrpc-http', protocol: 'jsonrpc-http')]
 class MessageRpcService extends AbstractRpcService implements MessageService
 {
     #[Inject]
@@ -48,6 +52,9 @@ class MessageRpcService extends AbstractRpcService implements MessageService
 
     #[Inject]
     protected MessageGetByIdQryExe $messageGetByIdQryExe;
+
+    #[Inject]
+    protected NotificationCmdExe $notificationCmdExe;
 
     #[Method(name: '消息推送列表')]
     public function listByPage(MessageListByPageQry $messageListByPageQry): PageVO
@@ -77,5 +84,16 @@ class MessageRpcService extends AbstractRpcService implements MessageService
     public function getById(int $id): MessageVO
     {
         return $this->messageGetByIdQryExe->execute($id);
+    }
+
+    /**
+     * 发送消息
+     * @param array $params 参数参考 \Uss\Message\Client\Dto\Command\NotificationCmd::class
+     * @return array \Uss\Message\Client\ViewObject\ResultVO::toArray 结果
+     */
+    public function send(array $params): array
+    {
+        $result = $this->notificationCmdExe->execute(NotificationCmd::of($params));
+        return $result->toArray();
     }
 }

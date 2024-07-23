@@ -25,6 +25,9 @@ class MessageDO
     #[Column(name: 'uniqid', type: 'string', desc: '唯一识别符（不可重复）')]
     private string $uniqid;
 
+    #[Column(name: 'agent_id', type: 'int', desc: '应用id')]
+    private int $agentId;
+
     #[Column(name: 'tpl_id', type: 'int', desc: '模板id')]
     private int $tplId;
 

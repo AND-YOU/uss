@@ -178,9 +178,8 @@ abstract class DingDingBasePushSender extends AbstractMessageSender
     {
         $container = \Hyperf\Context\ApplicationContext::getContainer();
         $logger = $container->get(LoggerFactory::class)->get(static::class);
-
-        $container = \Hyperf\Context\ApplicationContext::getContainer();
         $clientFactory = $container->get(ClientFactory::class);
+
         $client = $clientFactory->create();
         $res = $client->post($url, [
             'headers' => [
